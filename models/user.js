@@ -26,7 +26,7 @@ const userSchema = new Schema(
             ref: 'Post'
         }]
 	},
-	{ timestamp: true }
+	{ timestamps: true }
 );
 
 export default mongoose.model('User', userSchema)
