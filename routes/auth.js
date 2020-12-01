@@ -1,6 +1,7 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { signUp, logIn } from '../controllers/auth';
+import isAuth from '../middleware/is-auth';
+import { signUp, logIn, getUserStatus, updateUserStatus } from '../controllers/auth';
 import User from '../models/user';
 
 const router = express.Router();
@@ -26,5 +27,19 @@ router.post(
 );
 
 router.post('/login', logIn);
+
+router.get('/status', isAuth, getUserStatus);
+
+router.patch(
+  '/status',
+  isAuth,
+  [
+    body('status')
+      .trim()
+      .not()
+      .isEmpty()
+  ],
+  updateUserStatus
+);
 
 export default router;
