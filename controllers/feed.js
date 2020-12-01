@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import Post from '../models/post';
 import User from '../models/user';
+import io from '../socket';
 
 export const getPosts = async (req, res, next) => {
 	const currentPage = req.query.page || 1;
@@ -11,7 +12,9 @@ export const getPosts = async (req, res, next) => {
 	try {
 		const count = await Post.find().countDocuments();
 		totalItems = count;
-		const posts = await Post.find().populate('creator')
+		const posts = await Post.find()
+			.populate('creator')
+			.sort({createdAt: -1})
 			.skip((currentPage - 1) * perPage)
 			.limit(perPage);
 		res
@@ -71,6 +74,12 @@ export const createPost = async (req, res, next) => {
 		const user = await User.findById(req.userId);
 		user.posts.push(post);
 		await user.save();
+
+		io.getIO().emit('posts', {
+			action: 'create',
+			post: {...post._doc, creator: {_id: req.userId, name: user.name}}
+		})
+
 		res.status(201).json({
 			message: 'Post created successfully',
 			post: post,
@@ -113,6 +122,10 @@ export const updatePost = async (req, res, next) => {
 
 	try {
 		const result = await post.save();
+		io.getIO().emit('posts', {
+			action: 'update',
+			post: result	
+		})
 		res.status(200).json({ message: 'Post updated', post: result });
 	} catch (err) {
 		setError(err, 500);
@@ -134,6 +147,10 @@ export const deletePost = async (req, res, next) => {
 		const user = await User.findById(req.userId)
 		user.posts.pull(postId)
 		await user.save()
+		io.getIO().emit('posts', {
+			action: 'delete',
+			post: postId
+		})
 		res.status(200).json({ message: 'Post successfully deleted' });
 	} catch (err) {
 		setError(err, 500);

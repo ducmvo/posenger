@@ -5,6 +5,7 @@ import authRoutes from './routes/auth';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import multer from 'multer';
+import io from './socket';
 
 if (process.env.NODE_ENV !== 'production') {
 	require('dotenv').config();
@@ -69,7 +70,10 @@ mongoose
 		useUnifiedTopology: true
 	})
 	.then((result) => {
-		app.listen(8080);
+        const server = app.listen(8080);
+        io.init(server).on('connection', socket => {
+            console.log('Client connected');
+        })
 	})
 
 	.catch((err) => console.log(err));
