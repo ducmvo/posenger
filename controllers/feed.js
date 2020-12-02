@@ -37,7 +37,7 @@ export const getPost = async (req, res, next) => {
 		if (!post) {
 			const error = new Error('Could not find post');
 			setError(error, 404);
-			throw err;
+			throw error;
 		}
 		res.status(200).json({ message: 'Post fetched', post: post });
 	} catch (err) {
@@ -55,7 +55,7 @@ export const createPost = async (req, res, next) => {
 	}
 
 	if (!req.file) {
-		const err = new Err('No image provided');
+		const err = new Error('No image provided');
 		setError(err, 404);
 		throw err;
 	}
@@ -98,7 +98,7 @@ export const updatePost = async (req, res, next) => {
 		const err = new Error('Validation failed, entered data is incorrect');
 		setError(err, 422);
 	}
-	const postId = req.params.postId;
+	// const postId = req.params.postId;
 	const title = req.body.title;
 	const content = req.body.content;
 
